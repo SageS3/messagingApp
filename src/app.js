@@ -13,6 +13,14 @@ const CONNECTION = process.env.CONNECTION
 const PORT = process.env.PORT || 3000
 mongoose.set('strictQuery', false) 
 
+app.get('/api/messages', (req, res) => { 
+  try{ 
+    const message = "This is my world now"
+    res.status(500).json({message})
+  }catch(err){ 
+    res.status(400).json({error: err})
+  }
+})
 
 const start = async() => { 
   try{ 
