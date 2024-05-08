@@ -15,10 +15,15 @@ const CONNECTION = process.env.CONNECTION
 const PORT = process.env.PORT || 3000
 mongoose.set('strictQuery', false) 
 
-app.get('/api/messages', (req, res) => { 
+app.get('/api/conversations/:id', async (req, res) => { 
   try{ 
-    const message = "This is my world now"
-    res.status(500).json({message})
+    const result = await Conversation.findById(req.params.id)
+    if(result){ 
+      res.json(result)
+    } else { 
+      res.status(404).json({error:"Conversation not found"})
+    }
+ 
   }catch(err){ 
     res.status(400).json({error: err})
   }
