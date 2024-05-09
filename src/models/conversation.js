@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 // this code allows to model data 
 const conversationSchema = new mongoose.Schema({
   time:String,
-  members:[String],
+  members:{type:[String], required:true},
   messages:[ 
     {
       sender:String, 
