@@ -4,6 +4,7 @@ const dotenv = require("dotenv")
 const cors = require("cors")
 const app = express()
 const Conversation = require('./models/conversation')
+const Message = require('./models/message')
 
 app.use(cors())
 app.use(express.json())
@@ -14,6 +15,30 @@ if(process.env.NODE_ENV !== 'production'){
 const CONNECTION = process.env.CONNECTION
 const PORT = process.env.PORT || 3000
 mongoose.set('strictQuery', false) 
+
+app.delete('/api/conversations/:id', async (req, res) => { 
+  try{ 
+    const result = await Conversation.deleteOne({_id:req.params.id})
+    res.json({deletedCount: result})
+  } catch(err){ 
+    res.status(404).json({error: err})
+  }
+})
+
+app.post('/api/conversations/:id/messages', async (req, res) => { 
+  try{ 
+    const conversation = await Conversation.findById(req.params.id)
+    if(!conversation) { 
+      res.status(404).json({error: "conversation not found"})
+    }
+    conversation.messages.push(req.body)
+    conversation.totalMessages += 1
+    await conversation.save();
+    res.status(200).json({ message: 'Message added to conversation', conversation });
+  }catch(err){ 
+    res.status(404).json({error:err})
+  }
+})
 
 app.get('/api/conversations/:id', async (req, res) => { 
   try{ 
