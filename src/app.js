@@ -47,6 +47,25 @@ app.delete('/api/conversations/:conversationId/messages/:messageId', async (req,
   }
 });
 
+app.delete('/api/conversations/:conversationId/members/:memberName', async (req, res) => { 
+  try{ 
+    const conversation = await Conversation.findById(req.params.conversationId)
+    if(!conversation){ 
+      return res.status(404).json({error:"Conversation not found"})
+    }
+
+    const memberIndex = conversation.members.indexOf(req.params.memberName)
+    if(memberIndex === -1){ 
+      return res.status(404).json({error:"Member not found"})
+    }
+    conversation.members.splice(memberIndex,1)
+    await conversation.save()
+    return res.json({ success: true });
+  }catch(err){ 
+    res.status(404).json({error:err})
+  }
+})
+
 app.post('/api/conversations', async (req,res) => {
   const conversation = new Conversation(req.body) 
   try{ 
