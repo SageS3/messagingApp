@@ -49,26 +49,28 @@ app.delete('/api/conversations/:conversationId/messages/:messageId', async (req,
 
 app.delete('/api/conversations/:conversationId/members/:memberName', async (req, res) => { 
   try{ 
+    //find conversation
     const conversation = await Conversation.findById(req.params.conversationId)
-    if(!conversation){ 
-      return res.status(404).json({error:"Conversation not found"})
-    }
-
+    //find conversation error handling
+    !conversation && res.status(404).json({error:"Conversation not found"})
+    //find member index
     const memberIndex = conversation.members.indexOf(req.params.memberName)
+    // find member index error handling
     if(memberIndex === -1){ 
       return res.status(404).json({error:"Member not found"})
     }
+    // splice member from members array
     conversation.members.splice(memberIndex,1)
-
-    // filter messages array, delete all messages with the sender name equal to memberName
-    const updatedMessages = conversation.messages.filter((message) => { 
-      message.sender !== req.params.memberName // work on
-    })
-    conversation.messages = updatedMessages // work on
+    // remove all message sent by memberName
+    conversation.messages.pull({sender: req.params.memberName})
+    // update totalMessage property
     conversation.totalMessages = conversation.messages.length
+    // await save conversation
     await conversation.save()
+    // return response if operations succeed
     return res.json({ success: true });
   }catch(err){ 
+    // operation failed
     res.status(404).json({error:err})
   }
 })
