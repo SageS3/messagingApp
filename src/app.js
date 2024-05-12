@@ -59,6 +59,13 @@ app.delete('/api/conversations/:conversationId/members/:memberName', async (req,
       return res.status(404).json({error:"Member not found"})
     }
     conversation.members.splice(memberIndex,1)
+
+    // filter messages array, delete all messages with the sender name equal to memberName
+    const updatedMessages = conversation.messages.filter((message) => { 
+      message.sender !== req.params.memberName // work on
+    })
+    conversation.messages = updatedMessages // work on
+    conversation.totalMessages = conversation.messages.length
     await conversation.save()
     return res.json({ success: true });
   }catch(err){ 
@@ -69,6 +76,7 @@ app.delete('/api/conversations/:conversationId/members/:memberName', async (req,
 app.post('/api/conversations', async (req,res) => {
   const conversation = new Conversation(req.body) 
   try{ 
+    conversation.time = new Date().toLocaleTimeString()
     await conversation.save()
     res.status(201).json(conversation)
     console.log(conversation)
@@ -83,11 +91,14 @@ app.post('/api/conversations/:id/messages', async (req, res) => {
     if(!conversation) { 
       res.status(404).json({error: "conversation not found"})
     }
+    console.log(req.body)
     conversation.messages.push(req.body)
     conversation.members.push(req.body.sender)
-    conversation.totalMessages += 1
+    conversation.totalMessages = conversation.messages.length
+    conversation.time = new Date().toLocaleTimeString()
+    
     await conversation.save();
-    res.status(200).json({ message: 'Message added to conversation', conversation });
+    return res.status(200).json({ message: 'Message added to conversation', conversation });
   }catch(err){ 
     res.status(404).json({error:err})
   }
