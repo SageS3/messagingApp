@@ -1,16 +1,11 @@
 const mongoose = require('mongoose')
+const messageSchema = require('../models/message')
 // this code allows to model data 
 const conversationSchema = new mongoose.Schema({
   time:String,
   members:{type:[String], required:true},
-  messages:[ 
-    {
-      sender:String, 
-      message:String, 
-      timestamp:String
-    }
-  ],
-  totalMessages:Number
+  messages:[messageSchema],
+  totalMessages:{type:Number, default:0, required: true}
 });
 
 // validator function limits messages array
