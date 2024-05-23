@@ -13,8 +13,8 @@ export function Conversation() {
         `http://localhost:3001/api/conversations/${conversationId}`
       )
       setConversation(conversation.data)
+      console.log("get")
     } catch (error) {
-      console.log(error)
       switch (error.code) {
         case "ERR_BAD_REQUEST":
           setError("Bad Request")
@@ -25,9 +25,50 @@ export function Conversation() {
     }
   }
 
-  const mapMessages = () => {
+  async function postMessage(getMessagesCb) {
+    try {
+      const response = await axios.post(
+        `http://localhost:3001/api/conversations/${conversationId}/messages`,
+        {
+          sender: "Sage",
+          message: inputValue,
+          timestamp: new Date().toLocaleTimeString(),
+        }
+      )
+      if (response.status === 200) {
+        getMessagesCb()
+      }
+      console.log(response)
+    } catch (error) {
+      console.log(error.code)
+    }
+    setInputValue("")
+  }
+
+  async function deleteMessage(messageId, getMessagesCb) {
+    try {
+      const response = await axios.delete(
+        `http://localhost:3001/api/conversations/${conversationId}/messages/${messageId}`
+      )
+      if (response.status === 200) {
+        getMessagesCb()
+      }
+    } catch (error) {
+      setError(error.code)
+    }
+  }
+  async function deleteMessages() {
+    // deletes all messages
+  }
+
+  const mapMessages = (getMessagesCb) => {
     return conversation.messages.map((message, index) => (
-      <div key={index}>{message.message}</div>
+      <div key={index}>
+        {message.message}
+        <button onClick={() => deleteMessage(message._id, getMessagesCb)}>
+          delete
+        </button>
+      </div>
     ))
   }
 
@@ -37,20 +78,18 @@ export function Conversation() {
 
   useEffect(() => {
     getMessages()
-    return () => {
-      getMessages()
-    }
   }, [conversationId])
 
   return (
     <div>
-      {!conversation ? <div>{error}</div> : mapMessages()}
+      {!conversation ? <div>{error}</div> : mapMessages(getMessages)}
       <input
         placeholder="type message"
         type="text"
         value={inputValue}
         onChange={inputChangeHandler}
       ></input>
+      <button onClick={() => postMessage(getMessages)}>send</button>
     </div>
   )
 }
