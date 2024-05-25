@@ -25,7 +25,7 @@ export function Conversation() {
     }
   }
 
-  async function postMessage(getMessagesCb) {
+  async function postMessage(getMessages) {
     try {
       const response = await axios.post(
         `http://localhost:3001/api/conversations/${conversationId}/messages`,
@@ -36,7 +36,7 @@ export function Conversation() {
         }
       )
       if (response.status === 200) {
-        getMessagesCb()
+        getMessages()
       }
       console.log(response)
     } catch (error) {
@@ -45,27 +45,38 @@ export function Conversation() {
     setInputValue("")
   }
 
-  async function deleteMessage(messageId, getMessagesCb) {
+  async function deleteMessage(messageId, getMessages) {
     try {
       const response = await axios.delete(
         `http://localhost:3001/api/conversations/${conversationId}/messages/${messageId}`
       )
       if (response.status === 200) {
-        getMessagesCb()
+        getMessages()
       }
     } catch (error) {
       setError(error.code)
     }
   }
-  async function deleteMessages() {
-    // deletes all messages
+
+  async function deleteMessages(getMessages) {
+    try {
+      const response = await axios.delete(
+        `http://localhost:3001/api/conversations/${conversationId}/messages`
+      )
+      console.log(response.status)
+      if (response.status === 200) {
+        getMessages()
+      }
+    } catch (error) {
+      setError(error)
+    }
   }
 
-  const mapMessages = (getMessagesCb) => {
+  const mapMessages = (getMessages) => {
     return conversation.messages.map((message, index) => (
       <div key={index}>
         {message.message}
-        <button onClick={() => deleteMessage(message._id, getMessagesCb)}>
+        <button onClick={() => deleteMessage(message._id, getMessages)}>
           delete
         </button>
       </div>
@@ -82,6 +93,7 @@ export function Conversation() {
 
   return (
     <div>
+      <button onClick={() => deleteMessages(getMessages)}>Delete All</button>
       {!conversation ? <div>{error}</div> : mapMessages(getMessages)}
       <input
         placeholder="type message"
