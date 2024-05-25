@@ -3,14 +3,27 @@ import { Link } from "react-router-dom"
 import axios from "axios"
 export function Conversations() {
   const [conversations, setConversations] = useState(null)
-  const [getDataError, setGetDataError] = useState(undefined)
+  const [error, setError] = useState(undefined)
 
   async function getConversations() {
     try {
       const res = await axios.get("http://localhost:3001/api/conversations")
       setConversations(res.data.conversations)
     } catch (error) {
-      setGetDataError(error.message)
+      setError(error.message)
+    }
+  }
+
+  async function deleteConversation(getConversations, id) {
+    try {
+      const response = await axios.delete(
+        `http://localhost:3001/api/conversations/${id}`
+      )
+      if (response.status === 200) {
+        getConversations()
+      }
+    } catch (error) {
+      setError(error)
     }
   }
 
@@ -22,6 +35,13 @@ export function Conversations() {
             <p>{conversation.time}</p>
             <button>
               <Link to={`/conversations/${conversation._id}`}>View</Link>
+            </button>
+            <button
+              onClick={() =>
+                deleteConversation(getConversations, conversation._id)
+              }
+            >
+              Delete
             </button>
           </div>
         ))}
@@ -35,9 +55,7 @@ export function Conversations() {
 
   return (
     <div>
-      <div>
-        {!conversations ? <div>{getDataError}</div> : mapConversations()}
-      </div>
+      <div>{!conversations ? <div>{error}</div> : mapConversations()}</div>
     </div>
   )
 }
