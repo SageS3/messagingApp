@@ -27,6 +27,20 @@ export function Conversations() {
     }
   }
 
+  async function addConversation(getConversations) {
+    try {
+      const response = await axios.post(
+        "http://localhost:3001/api/conversations"
+      )
+      console.log(response.status)
+      if (response.status === 201) {
+        getConversations()
+      }
+    } catch (error) {
+      setError(error)
+    }
+  }
+
   function mapConversations() {
     return (
       <>
@@ -55,6 +69,9 @@ export function Conversations() {
 
   return (
     <div>
+      <button onClick={() => addConversation(getConversations)}>
+        add thread
+      </button>
       <div>{!conversations ? <div>{error}</div> : mapConversations()}</div>
     </div>
   )
